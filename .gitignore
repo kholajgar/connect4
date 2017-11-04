@@ -1,0 +1,7 @@
+*
+
+!.gitignore
+!*.py
+!connect4/
+!README.md
+!LICENSE.txt
