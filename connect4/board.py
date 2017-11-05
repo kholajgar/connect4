@@ -109,5 +109,5 @@ class Board:
 
     def tidvi_diags(self):
         return [self._board_array.diagonal(i)
-                for i in range(-self._board_array.shape[0],
-                               self._board_array.shape[1] - 1)]
+                for i in range(-self._board_array.shape[0] + 1,
+                               self._board_array.shape[1])]
