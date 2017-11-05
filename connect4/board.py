@@ -59,12 +59,23 @@ class Board:
     def get_array(self):
         return np.copy(self._board_array)
 
-    def play_in(self, col_number):
-        """Places the coin in the given column."""
+    def get_coin2play(self):
+        if np.sum(self._board_array) == 0:
+            coin2play = 1
+        elif np.sum(self._board_array) == 1:
+            coin2play = -1
+        else:
+            raise ValueError("The sum of the numpy array that is "
+                             "representing the board, should be"
+                             " either '0' or '1'.")
+        return coin2play
 
-        if not 0 <= col_number < self._number_of_columns:
-            raise ValueError("Column number out of board!")
-
+    def getrow_givencol(self, col_number):
+        """
+        Given the column number returns which row
+        the coin will land in. Returns -1 if the column
+        is full of coins. Gravity is implemented here.
+        """
         # start from the largest row number
         # (which is the bottom-most row)
         row_number = self._number_of_rows - 1
@@ -74,22 +85,21 @@ class Board:
                 break
             else:
                 row_number -= 1
+        return row_number
 
+    def play_in(self, col_number):
+        """Places the coin in the given column."""
+
+        if not 0 <= col_number < self._number_of_columns:
+            raise ValueError("Column number out of board!")
+
+        row_number = self.getrow_givencol(col_number)
         if row_number < 0:
-            return "column_full"
-
-        if np.sum(self._board_array) == 0:
-            coin2play = 1
-        elif np.sum(self._board_array) == 1:
-            coin2play = -1
+            return False
         else:
-            raise ValueError("The sum of the numpy array that is "
-                             "representing the board, should be"
-                             " either '0' or '1'.")
-
-        self._board_array[row_number, col_number] = coin2play
-
-        return True
+            coin2play = self.get_coin2play()
+            self._board_array[row_number, col_number] = coin2play
+            return True
 
     def is_board_full(self):
         arr1, arr2 = np.where(self._board_array == 0)
