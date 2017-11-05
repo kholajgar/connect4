@@ -3,13 +3,11 @@ import numpy as np
 
 
 class Board:
-    def __init__(self, number_of_rows=6, number_of_columns=7):
-        self._dtype = np.int32
-        self._board_array = np.zeros(
-            (number_of_rows, number_of_columns),
-            dtype=self._dtype)
-        self._number_of_rows = number_of_rows
-        self._number_of_columns = number_of_columns
+    def __init__(self, arr=np.zeros((6, 7), dtype=np.int32)):
+        self._dtype = arr.dtype
+        self._board_array = arr
+        self._number_of_rows = arr.shape[0]
+        self._number_of_columns = arr.shape[1]
 
         self._area = 750
 
@@ -103,3 +101,13 @@ class Board:
             return True
         else:
             return False
+
+    def advi_diags(self):
+        return [self._board_array[::-1, :].diagonal(i)
+                for i in range(-self._board_array.shape[0] + 1,
+                               self._board_array.shape[1])]
+
+    def tidvi_diags(self):
+        return [self._board_array.diagonal(i)
+                for i in range(-self._board_array.shape[0],
+                               self._board_array.shape[1] - 1)]
