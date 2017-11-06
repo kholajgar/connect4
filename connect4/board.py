@@ -1,9 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import itertools
 
 
 class Board:
-    def __init__(self, arr=np.zeros((6, 7), dtype=np.int32)):
+    def __init__(self, arr=np.zeros((6, 7), dtype=np.int32), win_len=4):
+
+        self._win_len = win_len
+
         self._dtype = arr.dtype
         self._board_array = arr
         self._number_of_rows = arr.shape[0]
@@ -121,3 +125,38 @@ class Board:
         return [self._board_array.diagonal(i)
                 for i in range(-self._board_array.shape[0] + 1,
                                self._board_array.shape[1])]
+
+    def _get_max_length_dict(self):
+        dict2ret = {}
+        for rnum in range(self._board_array.shape[0]):
+            local_vector = self._board_array[rnum, :]
+            self._max_seq_length(dict2ret, local_vector)
+        for cnum in range(self._board_array.shape[1]):
+            local_vector = self._board_array[:, cnum]
+            self._max_seq_length(dict2ret, local_vector)
+        for local_vector in self.advi_diags():
+            self._max_seq_length(dict2ret, local_vector)
+        for local_vector in self.tidvi_diags():
+            self._max_seq_length(dict2ret, local_vector)
+        return dict2ret
+
+    @staticmethod
+    def _max_seq_length(dict2ret, local_vector):
+        """This is a helper function."""
+        for x in itertools.groupby(local_vector):
+            my_key = x[0]
+            my_list = list(x[1])
+            if ((my_key not in dict2ret)
+                    or (len(my_list) > dict2ret[my_key])):
+                dict2ret[my_key] = len(my_list)
+
+    def is_game_over(self):
+        max_seq_dict = self._get_max_length_dict()
+        winner = ""
+        if max_seq_dict[-1] >= self._win_len:
+            winner = "min"
+        elif max_seq_dict[1] >= self._win_len:
+            winner = "max"
+        elif self.is_board_full():
+            winner = "draw"
+        return winner
