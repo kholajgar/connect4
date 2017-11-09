@@ -6,4 +6,5 @@ setup(
     author="Khol Ajgar",
     author_email="kholajgar@gmail.com",
     description="Connect 4 player.",
+    requires=['numpy', 'matplotlib']
 )
