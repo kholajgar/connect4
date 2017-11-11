@@ -4,12 +4,16 @@ import itertools
 
 
 class Board:
-    def __init__(self, arr=np.zeros((6, 7), dtype=np.int32), win_len=4):
+    def __init__(self, arr=None, win_len=4):
+
+        if not arr:
+            self._board_array = np.zeros((6, 7), dtype=np.int32)
+        else:
+            self._board_array = arr
 
         self._win_len = win_len
 
         self._dtype = arr.dtype
-        self._board_array = arr
         self._number_of_rows = arr.shape[0]
         self._number_of_columns = arr.shape[1]
 
