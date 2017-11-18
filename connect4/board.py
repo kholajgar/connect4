@@ -15,7 +15,7 @@ class Board:
         self._number_of_columns = arr.shape[1]
 
         self._area = 750
-
+    
     def show_board(self):
         fig, ax = plt.subplots()
         ax.set_facecolor("xkcd:dark yellow")
@@ -49,6 +49,9 @@ class Board:
 
         return fig, ax
 
+    def undo_move(self, row_number=0, col_number=0):
+        self._board_array[row_number][col_number] = 0    
+
     def insert_piece(self, color="red", col_number=0):
         """insert piece with gravity
         Args:
@@ -57,15 +60,15 @@ class Board:
         Returns:
             int: The return value. -1 if invalid else row number where piece was inserted.
         """
-        if col_number < 0 or col_number > 6:
-            print("Invalid Column Number")
+        if col_number < 0 or col_number > self._number_of_columns:
+            #print("Invalid Column Number")
             return -1
-        empty_squares = (np.where(self.board_array.T[col_number] == 0))[0]
+        empty_squares = (np.where(self._board_array.T[col_number] == 0))[0]
         if empty_squares.shape[0] == 0:
-            print("Column full")
-            return -1
-        self.board_array[empty_squares[0]][col_number] = -1 if color == "red" else 1
-        return empty_squares[0]
+            #print("Column full")
+            return -2
+        self._board_array[empty_squares[-1]][col_number] = 1 if color == "red" else -1
+        return empty_squares[-1]
 
     def copy_arr2board(self, arr):
         """"Copies a given numpy array to self._board_array."""
@@ -172,9 +175,9 @@ class Board:
     def is_game_over(self):
         max_seq_dict = self._get_max_length_dict()
         winner = ""
-        if max_seq_dict[-1] >= self._win_len:
+        if -1 in max_seq_dict and max_seq_dict[-1] >= self._win_len:
             winner = "min"
-        elif max_seq_dict[1] >= self._win_len:
+        elif 1 in max_seq_dict and max_seq_dict[1] >= self._win_len:
             winner = "max"
         elif self.is_board_full():
             winner = "draw"
