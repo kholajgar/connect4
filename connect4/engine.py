@@ -28,7 +28,7 @@ class Engine:
             int :- Column Number
         """
         self._board.copy_arr2board(arr)
-        best_val, best_move = self.minimax(1, True)
+        best_val, best_move = self.minimax(2, True)
         return best_move
 
     # currently has debug prints, will be removed.
