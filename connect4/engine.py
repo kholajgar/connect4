@@ -4,43 +4,22 @@ import itertools
 from .board import Board
 
 
-#-1 = blue. 1 = red. Engine is Blue for now. thus - Treat min as +10. 
+# -1 = blue. 1 = red. Engine is Blue for now. thus - Treat "min" game state as +10.
 
 class Engine:
     def __init__(self, arr=np.zeros((6, 7), dtype=np.int32), depth=3):
 
         self._dtype = arr.dtype
-        self._board = Board(arr)    # maintaining own copy of board, to avoid searching on game board
-        self._board.copy_arr2board(np.zeros((arr.shape),arr.dtype))    # have to refine this. in case of default arr not specified, problems due to Python using persistent array.
+        self._board = Board(arr)  # maintaining own copy of board, to avoid searching on game board
+        # have to refine this. in case of default arr not specified,
+        # problems due to Python using persistent array.
+        self._board.copy_arr2board(np.zeros((arr.shape),
+                                            arr.dtype))
         self._board_array = arr
         self._number_of_rows = arr.shape[0]
         self._number_of_columns = arr.shape[1]
         self._depth = depth
-    	
-#    # Temporary Play_move :- makes Search of depth 1 and returns win if present else a valid move
-#    def play_move(self, arr):
-#        """ traverses the search tree and returns Column Number
-#        Args:
-#            arr :- present state of board
-#        Returns:
-#            int :- Column Number
-#        """
-#        self._board.copy_arr2board(arr)
-#        for i in range(0,7):
-#            move_result = self._board.insert_piece(i)
-#            if move_result < 0:
-#                continue
-#            board_state = self._board.is_game_over() 
-#            self._board.undo_move(move_result,i)
-#            if board_state == "max":
-#                continue
-#            if board_state == "min":
-#                return i
-#            valid_move = i    
-#        return valid_move  # Temporary
 
-
-    # Temporary Play_move :- makes Search of depth 1 and returns win if present else a valid move
     def play_move(self, arr):
         """ traverses the search tree and returns Column Number
         Args:
@@ -49,44 +28,57 @@ class Engine:
             int :- Column Number
         """
         self._board.copy_arr2board(arr)
-        best_move = 0
-        best_val = -20
-        for i in range(0,7):
-            v = self.minimax(i, 1, True)
-            if v > best_val:
-                best_move = i
-                best_val  = v
+        best_val, best_move = self.minimax(1, True)
         return best_move
 
-   
-    def minimax(self, move, depth, maximizing_player):
+    # currently has debug prints, will be removed.
+    def minimax(self, depth, maximizing_player):
+        """ traverses the search tree and returns Column Number
+        Args:
+            depth :- desired depth of minimax tree, at depth = 0, heuristic is computed
+            maximizing_player :- boolean - when true, will return score of maximizing player
+        Returns:
+            tuple :- (best_value, best_move) 
+        """
         cur_color = "blue" if maximizing_player else "red"
-        move_result = self._board.insert_piece(cur_color,move)
-        heuristic_value = self.trivial_heuristic(maximizing_player)  #deciding whether terminal node based on heuristic. in actual - it will be based on a cheaper heuristic. (currently only have cheap)
-        print("move" + str(move))
-        print("depth" + str(depth))
-        print("color" + cur_color)
-        if heuristic_value != 0 or depth == 0 :
-            self._board.undo_move(move_result,move)
-            print("returning heuristic_val" + str(heuristic_value))
-            return heuristic_value
+        # deciding whether terminal node based on heuristic. in actual implementation
+        # - it will be based on a cheaper heuristic. (currently only have cheap)
+        heuristic_value = self.trivial_heuristic(maximizing_player)
+        # print("depth " + str(depth))
+        # print("color " + cur_color)
+        best_move = -1
+        if heuristic_value != 0 or depth == 0:
+            # print("returning heuristic_val  " + str(heuristic_value))
+            # print("returning best_move " + str(best_move))
+            # print("***********************")
+            return heuristic_value, best_move
         if maximizing_player:
             best_value = -20
-            for i in range(0,7) :    #moves list/child list
-                v = self.minimax(i, depth - 1, False)
+            for i in range(0, 7):  # moves list/child list
+                move_result = self._board.insert_piece(cur_color, i)
+                v, m = self.minimax(depth - 1, False)
                 best_value = max(best_value, v)
-            self._board.undo_move(move_result,move)
-            print("returning best_val" + str(best_value))
-            return best_value
+                if best_value == v:
+                    best_move = i
+                self._board.undo_move(move_result, i)
+            # print("returning best_val " + str(best_value))
+            # print("returning best_move " + str(best_move))
+            # print("***********************")
+            return best_value, best_move
 
         else:
             best_value = 20
-            for i in range(0,7):
-                v = self.minimax(i, depth - 1, True)
+            for i in range(0, 7):
+                move_result = self._board.insert_piece(cur_color, i)
+                v, m = self.minimax(depth - 1, True)
                 best_value = min(best_value, v)
-            self._board.undo_move(move_result,move)
-            print("returning best_val" + str(best_value))
-            return best_value
+                if best_value == v:
+                    best_move = i
+                self._board.undo_move(move_result, i)
+            # print("returning best_val " + str(best_value))
+            # print("returning best_move " + str(best_move))
+            # print("***********************")
+            return best_value, best_move
 
     def trivial_heuristic(self, maximizing_player):
         """ can only judge finished games
@@ -99,7 +91,4 @@ class Engine:
             ret_value = -10
         if game_result == "min":
             ret_value = 10
-#        if not maximizing_player:
-#            ret_value *= -1
         return ret_value
-      								

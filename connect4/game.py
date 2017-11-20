@@ -4,7 +4,9 @@ import itertools
 from .board import Board
 from .engine import Engine
 
+
 class Game:
+
     def __init__(self):
         self._board = Board()  # Currently creating default array of 6x7   
         print("Created New Game")
