@@ -13,9 +13,9 @@ class Board:
 
         self._win_len = win_len
 
-        self._dtype = arr.dtype
-        self._number_of_rows = arr.shape[0]
-        self._number_of_columns = arr.shape[1]
+        self._dtype = self._board_array.dtype
+        self.number_of_rows = self._board_array.shape[0]
+        self.number_of_columns = self._board_array.shape[1]
 
         self._area = 750
 
@@ -23,18 +23,18 @@ class Board:
         fig, ax = plt.subplots()
         ax.set_facecolor("xkcd:dark yellow")
 
-        for row_number in range(self._number_of_rows):
-            for col_number in range(self._number_of_columns):
+        for row_number in range(self.number_of_rows):
+            for col_number in range(self.number_of_columns):
                 color = "white"
                 if self._board_array[row_number, col_number] < -0.5:
                     color = "blue"
                 elif self._board_array[row_number, col_number] > 0.5:
                     color = "red"
-                # The step "self._number_of_rows - row_number - 1" below
+                # The step "self.number_of_rows - row_number - 1" below
                 # ensures that the way the board is displayed
                 # is aligned with the printed numpy array.
                 ax.scatter(col_number,
-                           self._number_of_rows - row_number - 1,
+                           self.number_of_rows - row_number - 1,
                            s=self._area, c=color)
 
         # the following gets rid of ticks
@@ -46,8 +46,8 @@ class Board:
             tic.label1On = tic.label2On = False
 
         # this avoids auto-sizing
-        ax.set_xlim([-0.75, self._number_of_columns - 0.25])
-        ax.set_ylim([-0.75, self._number_of_rows - 0.25])
+        ax.set_xlim([-0.75, self.number_of_columns - 0.25])
+        ax.set_ylim([-0.75, self.number_of_rows - 0.25])
         ax.set_aspect("equal")
 
         return fig, ax
@@ -56,8 +56,8 @@ class Board:
         """"Copies a given numpy array to self._board_array."""
 
         # Sanity check 1
-        assert arr.shape == (self._number_of_rows,
-                             self._number_of_columns)
+        assert arr.shape == (self.number_of_rows,
+                             self.number_of_columns)
 
         # Sanity check 2
         assert arr.dtype == self._dtype
@@ -80,34 +80,45 @@ class Board:
 
     def getrow_givencol(self, col_number):
         """
-        Given the column number returns which row
-        the coin will land in. Returns -1 if the column
+        Given the column number returns (row
+        the coin will land in) + 1. Returns 0 if the column
         is full of coins. Gravity is implemented here.
         """
-        # start from the largest row number
-        # (which is the bottom-most row)
-        row_number = self._number_of_rows - 1
-        while row_number >= 0:
-            if self._board_array[
-                    row_number, col_number] == 0:
-                break
-            else:
-                row_number -= 1
-        return row_number
+        # noinspection PyUnresolvedReferences
+        nonzeros = np.nonzero(self._board_array[:, col_number])[0]
+        # import pdb
+        # pdb.set_trace()
+        if not len(nonzeros):
+            return self.number_of_rows
+        else:
+            return np.min(nonzeros)
 
-    def play_in(self, col_number):
+    def add_in(self, col_number):
         """Places the coin in the given column."""
 
-        if not 0 <= col_number < self._number_of_columns:
+        if not 0 <= col_number < self.number_of_columns:
             raise ValueError("Column number out of board!")
 
-        row_number = self.getrow_givencol(col_number)
+        row_number = self.getrow_givencol(col_number) - 1
         if row_number < 0:
             return False
         else:
             coin2play = self.get_coin2play()
             self._board_array[row_number, col_number] = coin2play
             return True
+
+    def remove_from(self, col_number):
+        """Removes the coin from the given column."""
+
+        if not 0 <= col_number < self.number_of_columns:
+            raise ValueError("Column number out of board!")
+
+        row_number = self.getrow_givencol(col_number)
+        if row_number >= self.number_of_rows:
+            raise ValueError(
+                "Trying to remove coin from an empty column!")
+        else:
+            self._board_array[row_number, col_number] = 0
 
     def is_board_full(self):
         arr1, arr2 = np.where(self._board_array == 0)
