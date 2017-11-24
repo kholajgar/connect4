@@ -6,7 +6,7 @@ import itertools
 class Board:
     def __init__(self, arr=None, win_len=4):
 
-        if not arr:
+        if arr is None:
             self._board_array = np.zeros((6, 7), dtype=np.int32)
         else:
             self._board_array = arr
