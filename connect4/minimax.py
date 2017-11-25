@@ -18,6 +18,29 @@ class Node:
 
     def find_best_col2play(self, depth2go, col_played):
         if depth2go == 0:
+            best_val = hash(tuple(self.brd.get_array().flatten()))
+            best_col = col_played
+        else:
+            best_col = -1
+            c2p = self.brd.get_coin2play()
+            best_val = -1 * c2p * np.Inf
+            for col in self.bias_list:
+                if self.add_in(col):
+                    retcol, retval = self.find_best_col2play(
+                        depth2go - 1, col)
+                    if c2p * best_val < c2p * retval:
+                        best_col, best_val = retcol, retval
+                    self.remove_from(col)
+        if self.debug:
+            line2print = (
+                "depth2go: {}, best_val: {}".format(
+                    depth2go, best_val))
+            print(line2print)
+            input()
+        return best_col, best_val
+
+    def find_best_col2play_hash(self, depth2go, col_played):
+        if depth2go == 0:
             best_val = random_heur()
             best_col = col_played
         else:
@@ -31,6 +54,39 @@ class Node:
                     if c2p * best_val < c2p * retval:
                         best_col, best_val = retcol, retval
                     self.remove_from(col)
+        if self.debug:
+            line2print = (
+                "depth2go: {}, best_val: {}".format(
+                    depth2go, best_val))
+            print(line2print)
+            input()
+        return best_col, best_val
+
+    def find_best_col2play_ab(
+            self, depth2go, col_played,
+            alpha=-np.Inf, beta=np.Inf):
+        if depth2go == 0 or self.is_leaf():
+            best_val = hash(tuple(self.brd.get_array().flatten()))
+            best_col = col_played
+        else:
+            best_col = -1
+            c2p = self.brd.get_coin2play()
+            best_val = -1 * c2p * np.Inf
+            for col in self.bias_list:
+                if self.add_in(col):
+                    retcol, retval = self.find_best_col2play_ab(
+                        depth2go - 1, col, alpha, beta)
+                    if c2p * best_val < c2p * retval:
+                        best_col, best_val = retcol, retval
+
+                    if c2p == 1:
+                        alpha = max(alpha, best_val)
+                    elif c2p == -1:
+                        beta = min(beta, best_val)
+                    self.remove_from(col)
+                    if alpha >= beta:
+                        break
+
         if self.debug:
             line2print = (
                 "depth2go: {}, best_val: {}".format(
@@ -63,3 +119,6 @@ class Node:
             del self.sequence[-1]
             print(self.sequence)
             print(self.brd.get_array())
+
+    def is_leaf(self):
+        return self.brd.is_board_full()
