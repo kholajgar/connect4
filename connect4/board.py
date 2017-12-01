@@ -56,6 +56,25 @@ class Board:
     def undo_move(self, row_number=0, col_number=0):
         self._board_array[row_number][col_number] = 0    
 
+    def insert_piece_by_val(self, piece_val=1, col_number=0):
+        """insert piece with gravity
+        Args:
+            color ("string"): Color of piece to insert - "red" or "blue"
+            col_number ("int"): Column Number to insert the column to
+        Returns:
+            int: The return value. -1 if invalid else row number where piece was inserted.
+        """
+        if col_number < 0 or col_number > self.number_of_columns:
+            #print("Invalid Column Number")
+            return -1
+        empty_squares = (np.where(self._board_array.T[col_number] == 0))[0]
+        if empty_squares.shape[0] == 0:
+            #print("Column full")
+            return -2
+        self._board_array[empty_squares[-1]][col_number] = piece_val
+        return empty_squares[-1]
+
+
     def insert_piece(self, color="red", col_number=0):
         """insert piece with gravity
         Args:
@@ -64,7 +83,7 @@ class Board:
         Returns:
             int: The return value. -1 if invalid else row number where piece was inserted.
         """
-        if col_number < 0 or col_number > self._number_of_columns:
+        if col_number < 0 or col_number > self.number_of_columns:
             #print("Invalid Column Number")
             return -1
         empty_squares = (np.where(self._board_array.T[col_number] == 0))[0]
